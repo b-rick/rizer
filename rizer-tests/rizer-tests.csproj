@@ -26,6 +26,14 @@
     <Content Include="TestData\zsanchez-leagues.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Remove="TestData\rosters.json" />
+    <Content Include="TestData\rosters.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="TestData\trades.json" />
+    <Content Include="TestData\trades.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

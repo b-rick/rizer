@@ -9,6 +9,8 @@ public class SleeperConfigurationModel
     
     public string RostersEndpoint { get; set; }
     
+    public string TransactionsEndpoint { get; set; }
+    
     public string Sport { get; set; }
     public string UserId { get; set; }
     
@@ -23,14 +25,14 @@ public class SleeperConfigurationModel
                || string.IsNullOrEmpty(UserId);
     }
 
-    public string UserUri()
+    public string UserUri(string userId)
     {
-        return $"{BaseUrl}/{Version}/{UserEndpoint}/{UserId}";
+        return $"{BaseUrl}/{Version}/{UserEndpoint}/{userId}";
     }
 
-    public string UserLeaguesUri()
+    public string UserLeaguesUri(string userId)
     {
-        return $"{UserUri()}/{LeaguesEndpoint}s/{Sport}/{Season}";
+        return $"{UserUri(userId)}/{LeaguesEndpoint}s/{Sport}/{Season}";
     }
 
     public string LeaguesUri()
@@ -41,5 +43,10 @@ public class SleeperConfigurationModel
     public string RostersUri(string leagueId)
     {
         return $"{LeaguesUri()}/{leagueId}/{RostersEndpoint}";
+    }
+
+    public string TransactionsUri(string leagueId, int week)
+    {
+        return $"{LeaguesUri()}/{leagueId}/{TransactionsEndpoint}/{week}";
     }
 }

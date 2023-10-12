@@ -10,18 +10,25 @@ public class LeagueTrawlerTest
    [Test]
    public async Task testTrawler()
    {
-      var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+      var loggerFactory = LoggerFactory.Create(builder => builder.AddDebug());
       var httpClient = new HttpClient();
-      var config = new SleeperConfigurationModel();
-      config.Season = 2023;
-      config.Sport = "nfl";
-      config.Version = "v1";
-      config.RostersEndpoint = "rosters";
-      config.LeaguesEndpoint = "league";
-      config.UserEndpoint = "user";
-      config.BaseUrl = "https://api.sleeper.app";
-      config.UserId = "871988413874761728";
-      var trawler = new LeagueTrawler(config, httpClient, new LoggingReporter(loggerFactory));
+      var sleeperConfig = new SleeperConfigurationModel();
+      sleeperConfig.Season = 2023;
+      sleeperConfig.Sport = "nfl";
+      sleeperConfig.Version = "v1";
+      sleeperConfig.RostersEndpoint = "rosters";
+      sleeperConfig.LeaguesEndpoint = "league";
+      sleeperConfig.TransactionsEndpoint = "transactions";
+      sleeperConfig.UserEndpoint = "user";
+      sleeperConfig.BaseUrl = "https://api.sleeper.app";
+      sleeperConfig.UserId = "871988413874761728";
+
+      var trawlerConfig = new TrawlConfigurationModel();
+      trawlerConfig.MaxTrades = 1000;
+      trawlerConfig.NumWeeks = 17;
+      trawlerConfig.MaxTrawlDepth = 10;
+      trawlerConfig.TrawlRateLimit = -1;
+      var trawler = new LeagueTrawler(sleeperConfig, trawlerConfig, httpClient, new LoggingReporter(loggerFactory));
       await trawler.Trawl();
    }
 }

@@ -6,7 +6,9 @@ namespace rizer.Services.LeagueTrawlerReporter
     {
         void OnNewLeague(LeagueModel leagueModel);
 
-        void OnNewRoster(int rosterId);
+        void OnNewRoster(RosterModel rosterModel);
+
+        void OnNewTransaction(TransactionsModel transactionsModel);
     }
 
     public class LoggingReporter : ILeagueTrawlerReporter
@@ -15,6 +17,7 @@ namespace rizer.Services.LeagueTrawlerReporter
         public LoggingReporter(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<LoggingReporter>();
+            _logger.LogInformation("Hello world!");
         }
         
         public void OnNewLeague(LeagueModel leagueModel)
@@ -22,9 +25,21 @@ namespace rizer.Services.LeagueTrawlerReporter
             _logger.LogInformation("Found league - {}:{} ", leagueModel.Name, leagueModel.LeagueId); 
         }
 
-        public void OnNewRoster(int rosterId)
+        public void OnNewRoster(RosterModel rosterModel)
         {
-            throw new NotImplementedException();
+            _logger.LogInformation("Found roster - {}:{} ", rosterModel.OwnerId, rosterModel.RosterMetadata); 
+        }
+
+        public void OnNewTransaction(TransactionsModel transactionsModel)
+        {
+            if (transactionsModel.TransactionType == "trade")
+            {
+                _logger.LogInformation("Found trade - {}", transactionsModel.TransactionId);
+            }
+            else
+            {
+                _logger.LogInformation("Found other_transaction - {}", transactionsModel.TransactionId);
+            }
         }
     }
 
@@ -34,7 +49,11 @@ namespace rizer.Services.LeagueTrawlerReporter
         {
         }
 
-        public void OnNewRoster(int rosterId)
+        public void OnNewRoster(RosterModel rosterModel)
+        {
+        }
+
+        public void OnNewTransaction(TransactionsModel transactionsModel)
         {
         }
     }

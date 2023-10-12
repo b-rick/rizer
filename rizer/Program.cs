@@ -12,6 +12,10 @@ var leagueConfiguration = new SleeperConfigurationModel();
 builder.Configuration.GetSection("SleeperSettings").Bind(leagueConfiguration);
 builder.Services.AddSingleton(leagueConfiguration);
 
+var trawlerConfiguration = new TrawlConfigurationModel();
+builder.Configuration.GetSection("TrawlerSettings").Bind(trawlerConfiguration);
+builder.Services.AddSingleton(trawlerConfiguration);
+
 var app = builder.Build();
 // app.UseMiddleware<RequestLoggingMiddleware>();
 

@@ -22,10 +22,10 @@ public class LeaguesController : ControllerBase
     [HttpGet]
     public async Task<IList<LeagueModel>> Get()
     {
-        _logger.LogInformation("{}", _sleeperConfig.UserLeaguesUri());
-        var response = await _httpClient.GetAsync(_sleeperConfig.UserLeaguesUri());
+        _logger.LogInformation("{}", _sleeperConfig.UserLeaguesUri(_sleeperConfig.UserId));
+        var response = await _httpClient.GetAsync(_sleeperConfig.UserLeaguesUri(_sleeperConfig.UserId));
         response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadAsStringAsync();
-        return SleeperParser.Parse(json);
+        return SleeperParser.ParseLeagues(json);
     }
 }

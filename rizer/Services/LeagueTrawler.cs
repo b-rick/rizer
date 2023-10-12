@@ -6,44 +6,87 @@ namespace rizer.Services;
 
 public class LeagueTrawler
 {
-    private readonly ISet<string> league_ids_;
-    private readonly SleeperConfigurationModel config_;
-    private readonly HttpClient http_client_;
-    private readonly ILeagueTrawlerReporter reporter_;
+    private readonly ISet<string> _leagueIds = new HashSet<string>();
+    private readonly ISet<string> _ownerIds = new HashSet<string>();
+    
+    private readonly SleeperConfigurationModel _sleeperConfig;
+    private readonly TrawlConfigurationModel _trawlerConfig;
+    private readonly HttpClient _httpClient;
+    private readonly ILeagueTrawlerReporter _reporter;
+    private int _depth;
 
-    public LeagueTrawler(SleeperConfigurationModel config, HttpClient httpClient, ILeagueTrawlerReporter reporter)
+    public LeagueTrawler(SleeperConfigurationModel sleeperConfig, TrawlConfigurationModel trawlerConfig,
+        HttpClient httpClient, ILeagueTrawlerReporter reporter)
     {
-        league_ids_ = new HashSet<string>();
-        config_ = config;
-        http_client_ = httpClient;
-        reporter_ = reporter;
+        _depth = 0;
+        
+        _sleeperConfig = sleeperConfig;
+        _trawlerConfig = trawlerConfig;
+        _httpClient = httpClient;
+        _reporter = reporter;
     }
-
 
     public async Task Trawl()
     {
-        var response = await http_client_.GetAsync(config_.UserLeaguesUri());
-        response.EnsureSuccessStatusCode();
-        var json = await response.Content.ReadAsStringAsync();
-        var leagues = SleeperParser.Parse(json);
-        foreach (var model in leagues)
-        {
-            await Trawl(model);
-        }
+        await Trawl(_sleeperConfig.UserId, 0);
     }
 
-    private async Task Trawl(LeagueModel leagueModel)
+    private async Task Trawl(string userId, int depth)
     {
-        reporter_.OnNewLeague(leagueModel);
-        if (!league_ids_.Add(leagueModel.LeagueId))
+        if (depth > _trawlerConfig.MaxTrawlDepth)
+        {
+            return;
+        }
+        if (!_ownerIds.Add(userId))
+        {
+            return;
+        }
+        var response = await _httpClient.GetAsync(_sleeperConfig.UserLeaguesUri(userId));
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        var leagues = SleeperParser.ParseLeagues(json);
+        Task.WaitAll(leagues.Select(i => Trawl(i, depth)).ToArray());
+    }
+    
+
+    private async Task Trawl(LeagueModel leagueModel, int depth)
+    {
+        _reporter.OnNewLeague(leagueModel);
+        if (!_leagueIds.Add(leagueModel.LeagueId))
         {
             return;
         }
 
-        var response = await http_client_.GetAsync(config_.RostersUri(leagueModel.LeagueId));
+        await FindTrades(leagueModel);
+        // Recurse into each roster 
+        var response = await _httpClient.GetAsync(_sleeperConfig.RostersUri(leagueModel.LeagueId));
         response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadAsStringAsync();
-        Console.Write(json);
+        var rosters = SleeperParser.ParseRosters(json);
+        Task.WaitAll(rosters.Select(i => Trawl(i, depth)).ToArray());
     }
-    
+
+    private async Task Trawl(RosterModel rosterModel, int depth)
+    {
+        _reporter.OnNewRoster(rosterModel);
+        await Trawl(rosterModel.OwnerId, depth + 1);
+    }
+
+    private async Task FindTrades(LeagueModel leagueModel)
+    {
+        var myEnumerable = Enumerable.Range(0, _trawlerConfig.NumWeeks);
+        Task.WaitAll(myEnumerable.Select(week => FindTrade(leagueModel, week)).ToArray());
+    }
+
+    private async Task FindTrade(LeagueModel leagueModel, int week)
+    {
+        var response = await _httpClient.GetAsync(_sleeperConfig.TransactionsUri(leagueModel.LeagueId, week));
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        var transactions = SleeperParser.ParseTransactions(json);
+        foreach (var transactionsModel in transactions)
+        {
+            _reporter.OnNewTransaction(transactionsModel); 
+        }
+    }
 }
