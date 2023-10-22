@@ -32,7 +32,7 @@ public class SleeperConfigurationModel
 
     public string UserLeaguesUri(string userId)
     {
-        return $"{UserUri(userId)}/{LeaguesEndpoint}s/{Sport}/{Season}";
+        return $"{UserUri(userId)}/{LeaguesEndpoint}/{Sport}/{Season}";
     }
 
     public string LeaguesUri()

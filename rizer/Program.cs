@@ -1,5 +1,6 @@
 using rizer.Middleware;
 using rizer.Model;
+using rizer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.AddSingleton(leagueConfiguration);
 var trawlerConfiguration = new TrawlConfigurationModel();
 builder.Configuration.GetSection("TrawlerSettings").Bind(trawlerConfiguration);
 builder.Services.AddSingleton(trawlerConfiguration);
+builder.Services.AddSingleton<ICounterService, CounterService>();
 
 var app = builder.Build();
 // app.UseMiddleware<RequestLoggingMiddleware>();

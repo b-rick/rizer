@@ -1,0 +1,18 @@
+﻿@page
+@{
+    Layout = "_Layout";
+}
+
+<div id="count-display">Loading...</div>
+<script>
+    function updateCount() {
+        $.get('/api/Count/count', function(data) {
+            // Update the display with the received count value.
+            $('#count-display').text(data);
+        });
+    }
+
+    // Refresh the count every 2 seconds (adjust as needed).
+    setInterval(updateCount, 2000);
+</script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
